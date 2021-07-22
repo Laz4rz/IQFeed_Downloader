@@ -1,5 +1,6 @@
 import socket
 from sys import argv
+import iqfeed_settings
 
 
 def connect_to_socket(server_ip: str, server_port: int):
@@ -46,8 +47,8 @@ if __name__ == "__main__":
         ticker = argv[3]
     except Exception as e:
         print('Something went wrong with parsing arguments, used default settings instead')
-        ip = "6.tcp.ngrok.io"
-        port = 10824
+        ip = iqfeed_settings.server_ip
+        port = iqfeed_settings.server_port
         ticker = 'SPY'
 
     sock = connect_to_socket(ip, port)
