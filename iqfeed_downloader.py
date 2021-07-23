@@ -64,7 +64,7 @@ def receive_historical_data_socket(sock, recv_buffer=4096):
 
 def data_to_csv(data):
     try:
-        f = open(f"{sym}.csv", "w")
+        f = open(f"{sym}_{start_date}_{end_date}_{interval}.csv", "w")
         f.write(data)
         f.close()
     except Exception as e:
