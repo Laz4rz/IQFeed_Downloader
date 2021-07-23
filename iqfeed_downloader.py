@@ -1,6 +1,6 @@
 import socket
 from sys import argv
-import iqfeed_settings
+# import iqfeed_settings
 
 
 def connect_to_socket(host: str, port: int):
