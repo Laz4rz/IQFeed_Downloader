@@ -84,10 +84,11 @@ if __name__ == "__main__":
         port = int(argv[2])
         tickers = argv[3:]
     except Exception as e:
-        print('Something went wrong while parsing the arguments, used default settings instead')
-        host = iqfeed_settings.server_ip
-        port = iqfeed_settings.server_port
-        tickers = ["AAPL"]
+#         print('Something went wrong while parsing the arguments, used default settings instead')
+#         host = iqfeed_settings.server_ip
+#         port = iqfeed_settings.server_port
+#         tickers = ["AAPL"]
+        pass
 
     sock = connect_to_socket(host, port)
 
