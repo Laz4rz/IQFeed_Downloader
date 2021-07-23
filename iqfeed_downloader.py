@@ -1,6 +1,6 @@
 import socket
 from sys import argv
-import iqfeed_settings
+# import iqfeed_settings
 
 
 def connect_to_socket(host: str, port: int):
@@ -89,12 +89,12 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         print("Something went wrong while parsing the arguments, used default settings instead")
-        host = iqfeed_settings.historical_server_ip
-        port = iqfeed_settings.historical_server_port
-        start_date = "20210715"
-        end_date = "20210719"
-        interval = "1"
-        tickers = ["TLRY"]
+#         host = iqfeed_settings.historical_server_ip
+#         port = iqfeed_settings.historical_server_port
+#         start_date = "20210715"
+#         end_date = "20210719"
+#         interval = "1"
+#         tickers = ["TLRY"]
     
     sock = connect_to_socket(host, port)
 
