@@ -1,6 +1,6 @@
 import socket
 from sys import argv
-import iqfeed_settings
+# import iqfeed_settings
 
 
 def connect_to_socket(server_ip: str, server_port: int):
@@ -46,10 +46,11 @@ if __name__ == "__main__":
         port = int(argv[2])
         ticker = argv[3]
     except Exception as e:
-        print('Something went wrong while parsing the arguments, used default settings instead')
-        ip = iqfeed_settings.server_ip
-        port = iqfeed_settings.server_port
-        ticker = 'SPY'
+#         print('Something went wrong while parsing the arguments, used default settings instead')
+#         ip = iqfeed_settings.server_ip
+#         port = iqfeed_settings.server_port
+#         ticker = 'SPY'
+        pass
 
     sock = connect_to_socket(ip, port)
     establish_live_feed(ticker)
