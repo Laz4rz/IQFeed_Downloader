@@ -1,114 +1,66 @@
-import socket
-from sys import argv
-# import iqfeed_settings
+from typing import List
+
+import typer
+
+from iqfeed_utils import (
+    connect_to_socket, send_message_to_socket, receive_data, clean_data, data_to_csv,
+    close_socket, establish_live_feed
+    )
+
+app = typer.Typer()
 
 
-def connect_to_socket(host: str, port: int):
-    try:
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((host, port))
-        print('Connection established!')
-        return sock
-    except Exception as e:
-        print(e)
-        print('Something went wrong while establishing the connection, check host/port input')
-
-
-def close_socket(sock):
-    try:
-        sock.close()
-        print('Connection closed')
-    except Exception as e:
-        print(e)
-        print('Something went wrong while closing the connection')
-
-
-def send_message_to_socket(sock, message: str):
-    try:
-        sock.sendall(bytes(message, 'utf-8'))
-        print('Message sent...')
-    except Exception as e:
-        print(e)
-        print('Something went wrong while sending the message')
-
-
-def receive_historical_data_socket(sock, recv_buffer=4096):
+@app.command()
+def historical(
+    host: str,
+    port: int,
+    start_date: str,
+    end_date: str,
+    interval: str,
+    tickers: List[str],
+):
     """
-    Read the information from the socket, in a buffered
-    fashion, receiving only 4096 bytes at a time.
-    Parameters:
-    sock - The socket object
-    recv_buffer - Amount in bytes to receive per read
+    Historical lets you download historical data for a desired set of tickers between start/end date with custom candles
+    interval and then save it in a file with name made of set parameters, each ticker gets it's own file
+    :param host: IQFeed socket address
+    :param port: IQFeed socket port
+    :param start_date: Start date of data to download in YYYYMMDD format
+    :param end_date: End date of data to download in YYYYMMDD format
+    :param interval: Interval of data to download in seconds
+    :param tickers: List of tickers to download the data for
     """
-    buffer = ""
-    data = ""
-    try:
-        while True:
-            data = sock.recv(recv_buffer)
-            data = str(data, 'utf-8')
-            buffer += data
+    sock = connect_to_socket(host=host, port=port)
+    sock.sendall(bytes("S,SET PROTOCOL 6.1\n", "utf-8"))
 
-            # Check if the end message string arrives
-            if "!ENDMSG!" in buffer:
-                break
-
-        # Remove the end message string
-        buffer = buffer[:-12]
-
-        print("Data received...")
-        return buffer
-    except Exception as e:
-        print(e)
-        print("Something went wrong while receiving data")
-
-
-def data_to_csv(data):
-    try:
-        f = open(f"{sym}_{start_date}_{end_date}_{interval}.csv", "w")
-        f.write(data)
-        f.close()
-    except Exception as e:
-        print(e)
-        print("Something went wrong while dumping data")
-
-
-def clean_data(data):
-    data = "".join(data.split("\r"))
-    data = data.replace(",\n","\n")[:-1]
-    return data
-
-
-if __name__ == "__main__":
-    try:
-        host = argv[1]
-        port = int(argv[2])
-        tickers = argv[3:]
-    except Exception as e:
-#         print('Something went wrong while parsing the arguments, used default settings instead')
-#         host = iqfeed_settings.server_ip
-#         port = iqfeed_settings.server_port
-#         tickers = ["AAPL"]
-        pass
-
-    sock = connect_to_socket(host, port)
-
-    # Download each symbol to disk
     for sym in tickers:
         print(f"Downloading symbol: {sym}...")
 
-        # Construct the message needed by IQFeed to retrieve data
-        message = f"HIT,{sym},60,20140101 075000,,,093000,160000,1\n"
+        message = (
+            f"HTT,{sym},{interval},{start_date} 093000,{end_date} 160000\n"
+            if interval == "TICK"
+            else f"HIT,{sym},{interval},{start_date} 093000,{end_date} 160000\n"
+        )
 
-        # Encode and send the message
-        send_message_to_socket(sock, message)
-
-        # Receive the historical data
-        data = receive_historical_data_socket(sock)
-
-        # Prepare the data for CSV dump
-        data = clean_data(data)
-
-        # Write the data stream to disk
-        data_to_csv(data)
+        send_message_to_socket(sock=sock, message=message)
+        data = receive_data(sock=sock)
+        data = clean_data(data=data)
+        data_to_csv(data=data, sym=sym, start_date=start_date, end_date=end_date, interval=interval)
 
     close_socket(sock)
+
+
+@app.command()
+def live(host: str, port: int, ticker: str):
+    """
+    Live lets you establish a live flow of desired ticker's prices
+    :param host: IQFeed socket address
+    :param port: IQFeed socket port
+    :param ticker: Ticker name that you wish to follow
+    :return: Streams a price flow
+    """
+    sock = connect_to_socket(host=host, port=port)
+    establish_live_feed(sock=sock, ticker_name=ticker)
+
+
+if __name__ == "__main__":
+    app()
