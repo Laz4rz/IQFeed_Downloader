@@ -36,5 +36,7 @@ As return the script saves CSV file with name: **TICKER_STARTDATE_ENDDATE_INTERV
 
 You only have to feed it three things: host address, host port and ticker name. In return it prints live tick data of desired stock until interrupted.
 
+Default port of IQFeed live data socket is 5009.
+
 
 
